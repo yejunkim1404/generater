@@ -22,50 +22,44 @@ words_per_sentence = st.text_input(
     placeholder="8"
 ) or "8"
 
-# --- 문법 요소 (번호 기반) ---
-grammar_dict = {
-    1: "현재시제",
-    2: "과거시제",
-    3: "미래시제 (will / be going to)",
-    4: "현재진행형",
-    5: "현재완료",
+# --- 문법 요소 목록 (selectbox) ---
+grammar_options = [
+    "현재시제",
+    "과거시제",
+    "미래시제 (will / be going to)",
+    "현재진행형",
+    "현재완료",
 
-    6: "조동사 can / could",
-    7: "조동사 may / might",
-    8: "조동사 must / have to",
-    9: "조동사 should",
+    "조동사 can / could",
+    "조동사 may / might",
+    "조동사 must / have to",
+    "조동사 should",
 
-    10: "의문문",
-    11: "부정문",
-    12: "명령문",
+    "의문문",
+    "부정문",
+    "명령문",
 
-    13: "접속사 because",
-    14: "접속사 when / while",
-    15: "조건문 if",
+    "접속사 because",
+    "접속사 when / while",
+    "조건문 if",
 
-    16: "관계대명사 who / which / that",
+    "관계대명사 who / which / that",
 
-    17: "비교급",
-    18: "최상급",
-    19: "as ~ as",
+    "비교급",
+    "최상급",
+    "as ~ as",
 
-    20: "to부정사 (목적)",
-    21: "동명사 (~ing)",
+    "to부정사 (목적)",
+    "동명사 (~ing)",
 
-    22: "수동태 (be + p.p.)",
+    "수동태 (be + p.p.)",
 
-    23: "가정법 과거 (If I were~)"
-}
+    "가정법 과거 (If I were~)"
+]
 
-# --- 문법 목록 표시 ---
-st.subheader("📌 문법 요소 목록 (번호 선택)")
-
-for num, grammar in grammar_dict.items():
-    st.write(f"{num}. {grammar}")
-
-grammar_number = st.text_input(
-    "사용할 문법 번호 입력",
-    placeholder="예: 10"
+grammar = st.selectbox(
+    "사용할 문법 요소 선택",
+    grammar_options
 )
 
 # --- Lexile 매핑 ---
@@ -80,34 +74,30 @@ level_to_lexile_map = {
 
 # --- 실행 버튼 ---
 if st.button("✏️ 문장 만들기"):
-    if not grammar_number.isdigit() or int(grammar_number) not in grammar_dict:
-        st.warning("⚠️ 올바른 문법 번호를 입력하세요.")
-    else:
-        selected_grammar = grammar_dict[int(grammar_number)]
-        lexile_level = level_to_lexile_map[level]
+    lexile_level = level_to_lexile_map[level]
 
-        prompt = (
-            f"영단어 {word}를 반드시 사용하고, "
-            f"{level} 수준({lexile_level})에 맞추어 "
-            f"{selected_grammar} 문법을 적용한 영어 문장 3개를 생성하시오. "
-            f"각 문장은 정확히 {words_per_sentence}단어로 구성하시오."
-        )
+    prompt = (
+        f"영단어 {word}를 반드시 사용하고, "
+        f"{level} 수준({lexile_level})에 맞추어 "
+        f"{grammar} 문법을 적용한 영어 문장 3개를 생성하시오. "
+        f"각 문장은 정확히 {words_per_sentence}단어로 구성하시오."
+    )
 
-        response = client.chat.completions.create(
-            model="gpt-4.1",
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "문장 생성만 수행할 것. "
-                        "각 문장은 번호를 붙일 것. "
-                        "지정된 영단어는 **bold** 처리할 것. "
-                        "다른 설명이나 해설은 하지 말 것."
-                    )
-                },
-                {"role": "user", "content": prompt},
-            ]
-        )
+    response = client.chat.completions.create(
+        model="gpt-4.1",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "문장 생성만 수행할 것. "
+                    "각 문장은 번호를 붙일 것. "
+                    "지정된 영단어는 **bold** 처리할 것. "
+                    "다른 설명이나 해설은 하지 말 것."
+                )
+            },
+            {"role": "user", "content": prompt},
+        ]
+    )
 
-        st.subheader("✅ 생성된 문장")
-        st.write(response.choices[0].message.content)
+    st.subheader("✅ 생성된 문장")
+    st.write(response.choices[0].message.content)
